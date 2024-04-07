@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package os_module;
+
+message DirectoryListing {
+    string path = 1;
+    bool recursive = 2;
+}

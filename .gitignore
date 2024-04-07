@@ -1,1 +1,6 @@
 **/target
+**/bin
+**/.venv
+proto/protoc
+serialized.bin
+*.pyc
