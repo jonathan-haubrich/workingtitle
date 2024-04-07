@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+use lazy_static::lazy_static;
 
 pub mod os_module {
     include!("os_module.rs");
@@ -7,9 +9,23 @@ pub mod dispatch {
     include!("dispatch.rs");
 }
 
+type DispatchFn = fn(Vec<u8>) -> Vec<u8>;
+
+fn dirlist(serialized_args: Vec<u8>) -> Vec<u8> {
+    Vec::new()
+}
+
 #[no_mangle]
-pub extern fn dispatch(left: usize, right: usize) -> usize {
-    left + right
+pub extern fn dispatch(message: dispatch::DispatchMessage) -> Vec<u8> {
+    // let mut FUNCTION_MAP: HashMap<&str, Box<DispatchFn>> = HashMap::new();
+
+    // FUNCTION_MAP.insert("758d227f-27e0-4406-b27e-cf9976948109", Box::new(dirlist));
+
+    let FUNCTION_MAP: HashMap<&str, DispatchFn> = HashMap::from([
+        ("758d227f-27e0-4406-b27e-cf9976948109", dirlist as DispatchFn)
+    ]);
+
+    Vec::new()
 }
 
 #[cfg(test)]
