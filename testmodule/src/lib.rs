@@ -1,6 +1,10 @@
 
 pub mod os_module {
-    include!(concat!(env!("OUT_DIR"), "/os_module.rs"));
+    include!("os_module.rs");
+}
+
+pub mod dispatch {
+    include!("dispatch.rs");
 }
 
 #[no_mangle]
@@ -15,12 +19,6 @@ mod tests {
     use os_module::DirectoryListing;
 
     use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
 
     #[test]
     fn test_deserialize() -> std::io::Result<()> {
