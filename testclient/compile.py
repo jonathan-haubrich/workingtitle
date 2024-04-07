@@ -12,12 +12,11 @@ def compile_proto(proto_file):
     stdout, stderr = proc.communicate()
 
     if proc.returncode != 0:
-        raise Exception(f'stdout: {stdout}\nstderr: {stderr}\n')
+        raise Exception(f'\nstdout: {stdout}\nstderr: {stderr}\n')
 
 def main():
     for proto_file in glob.glob(os.path.join(PROTO_DIR, "*.proto")):
-        proto_file_path = os.path.join(PROTO_DIR, proto_file)
-        compile_proto(proto_file_path)
+        compile_proto(proto_file)
 
 if __name__ == '__main__':
     main()
