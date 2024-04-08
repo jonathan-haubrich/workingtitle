@@ -4,10 +4,10 @@ use std::path::Path;
 
 fn main() -> Result<()> {
     // setup exports
-    let def_file_path = "exports.def";
-    if env::var("CARGO_CFG_TARGET_ENV").unwrap() == "msvc" {
-        println!("cargo::rustc-link-arg=/DEF:{}", def_file_path);
-    }
+    // let def_file_path = "exports.def";
+    // if env::var("CARGO_CFG_TARGET_ENV").unwrap() == "msvc" {
+    //     println!("cargo::rustc-link-arg=/DEF:{}", def_file_path);
+    // }
 
     // compile proto files
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
