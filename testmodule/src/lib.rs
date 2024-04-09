@@ -56,7 +56,7 @@ pub mod dispatch {
     include!("dispatch.rs");
 }
 
-pub type DispatchFn = extern "C" fn(data: *const u8, len: usize) -> (*mut u8, usize);
+pub type DispatchFn = extern "C" fn(data: *const u8, len: usize) -> Payload;
 type CommandFn = fn(Vec<u8>) -> Vec<u8>;
 
 fn dirlist(serialized_args: Vec<u8>) -> Vec<u8> {
@@ -107,7 +107,7 @@ fn dirlist(serialized_args: Vec<u8>) -> Vec<u8> {
 }
 
 #[no_mangle]
-pub extern "C" fn dispatch(data: *const u8, len: usize) -> (*mut u8, usize) {
+pub extern "C" fn dispatch(data: *const u8, len: usize) -> Payload {
     println!("data: {:?} len: {}", data, len);
     let bytes = unsafe{ slice::from_raw_parts(data, len) };
     let message = Vec::from(bytes);
@@ -120,7 +120,7 @@ pub extern "C" fn dispatch(data: *const u8, len: usize) -> (*mut u8, usize) {
                     let ptr = response.as_mut_ptr();
                     let len = response.len();
                     std::mem::forget(response);
-                    return (ptr, len);
+                    return Payload::new(ptr, len);
                 },
                 Err(error) => println!("Dispatch failed: {}", error)
             }
@@ -128,7 +128,7 @@ pub extern "C" fn dispatch(data: *const u8, len: usize) -> (*mut u8, usize) {
         Err(error) => println!("Decode failed: {}", error)
     };
 
-    (std::ptr::null_mut(), 0)
+    Payload::default()
 }
 
 fn dispatch_internal(message: dispatch::DispatchMessage) -> std::result::Result<Vec<u8>, DispatchError> {

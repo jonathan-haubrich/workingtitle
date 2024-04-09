@@ -72,9 +72,9 @@ fn main() -> std::io::Result<()> {
     let _ = client.read_to_end(&mut data).unwrap();
 
     let (ptr, size) = (data.as_mut_ptr(), data.len());
-    let (ptr, len) = dispatch(ptr, size);
+    let response = dispatch(ptr, size);
 
-    let response = unsafe { std::slice::from_raw_parts(ptr, len) };
+    let response = unsafe { std::slice::from_raw_parts(response.ptr(), response.len()) };
     
     match client.write_all(response) {
         Ok(_) => println!("Successfully sent response"),
