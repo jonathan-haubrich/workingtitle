@@ -4,3 +4,4 @@
 proto/protoc
 serialized.bin
 *.pyc
+*.bin

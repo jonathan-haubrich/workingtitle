@@ -299,6 +299,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "testcore"
+version = "0.1.0"
+dependencies = [
+ "bytes",
+ "lazy_static",
+ "prost",
+ "prost-build",
+ "testmodule",
+ "windows",
+]
+
+[[package]]
 name = "testmodule"
 version = "0.1.0"
 dependencies = [
