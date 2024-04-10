@@ -14,13 +14,21 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0fos_module.proto\x12\tos_module\"3\n\x10\x44irectoryListing\x12\x0c\n\x04path\x18\x01 \x01(\t\x12\x11\n\trecursive\x18\x02 \x01(\x08\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0fos_module.proto\x12\tos_module\":\n\x17\x44irectoryListingRequest\x12\x0c\n\x04path\x18\x01 \x01(\t\x12\x11\n\trecursive\x18\x02 \x01(\x08\"\x9f\x01\n\x15\x44irectoryListingEntry\x12\x0c\n\x04path\x18\x01 \x01(\t\x12\x10\n\x08\x61\x63\x63\x65ssed\x18\x02 \x01(\x04\x12\x10\n\x08modified\x18\x03 \x01(\x04\x12\x0f\n\x07\x63reated\x18\x04 \x01(\x04\x12\x0c\n\x04size\x18\x05 \x01(\x04\x12\x12\n\nattributes\x18\x06 \x01(\r\x12!\n\x04type\x18\x07 \x01(\x0e\x32\x13.os_module.FileType\"\x88\x01\n\x1e\x44irectoryListingDirectoryEntry\x12\x33\n\tdirectory\x18\x01 \x01(\x0b\x32 .os_module.DirectoryListingEntry\x12\x31\n\x07\x65ntries\x18\x02 \x03(\x0b\x32 .os_module.DirectoryListingEntry\"V\n\x18\x44irectoryListingResponse\x12:\n\x07listing\x18\x01 \x03(\x0b\x32).os_module.DirectoryListingDirectoryEntry*N\n\x08\x46ileType\x12\x17\n\x13\x46ILE_TYPE_DIRECTORY\x10\x00\x12\x12\n\x0e\x46ILE_TYPE_FILE\x10\x01\x12\x15\n\x11\x46ILE_TYPE_SYMLINK\x10\x02\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'os_module_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_DIRECTORYLISTING']._serialized_start=30
-  _globals['_DIRECTORYLISTING']._serialized_end=81
+  _globals['_FILETYPE']._serialized_start=479
+  _globals['_FILETYPE']._serialized_end=557
+  _globals['_DIRECTORYLISTINGREQUEST']._serialized_start=30
+  _globals['_DIRECTORYLISTINGREQUEST']._serialized_end=88
+  _globals['_DIRECTORYLISTINGENTRY']._serialized_start=91
+  _globals['_DIRECTORYLISTINGENTRY']._serialized_end=250
+  _globals['_DIRECTORYLISTINGDIRECTORYENTRY']._serialized_start=253
+  _globals['_DIRECTORYLISTINGDIRECTORYENTRY']._serialized_end=389
+  _globals['_DIRECTORYLISTINGRESPONSE']._serialized_start=391
+  _globals['_DIRECTORYLISTINGRESPONSE']._serialized_end=477
 # @@protoc_insertion_point(module_scope)

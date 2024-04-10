@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0e\x64ispatch.proto\x12\x08\x64ispatch\"J\n\x0f\x44ispatchMessage\x12\x11\n\tmodule_id\x18\x01 \x01(\t\x12\x13\n\x0b\x66unction_id\x18\x02 \x01(\t\x12\x0f\n\x07payload\x18\x03 \x01(\x0c\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0e\x64ispatch.proto\x12\x08\x64ispatch\"J\n\x0f\x44ispatchMessage\x12\x11\n\tmodule_id\x18\x01 \x01(\t\x12\x13\n\x0b\x66unction_id\x18\x02 \x01(\t\x12\x0f\n\x07payload\x18\x03 \x01(\x0c\"2\n\x10\x44ispatchResponse\x12\r\n\x05\x65rror\x18\x01 \x01(\r\x12\x0f\n\x07payload\x18\x02 \x01(\x0c\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -23,4 +23,6 @@ if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
   _globals['_DISPATCHMESSAGE']._serialized_start=28
   _globals['_DISPATCHMESSAGE']._serialized_end=102
+  _globals['_DISPATCHRESPONSE']._serialized_start=104
+  _globals['_DISPATCHRESPONSE']._serialized_end=154
 # @@protoc_insertion_point(module_scope)

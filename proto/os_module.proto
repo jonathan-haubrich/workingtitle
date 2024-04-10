@@ -2,7 +2,32 @@ syntax = "proto3";
 
 package os_module;
 
-message DirectoryListing {
+message DirectoryListingRequest {
     string path = 1;
     bool recursive = 2;
+}
+
+enum FileType {
+    FILE_TYPE_DIRECTORY = 0;
+    FILE_TYPE_FILE = 1;
+    FILE_TYPE_SYMLINK = 2;
+}
+
+message DirectoryListingEntry {
+    string path = 1;
+    uint64 accessed = 2;
+    uint64 modified = 3;
+    uint64 created = 4;
+    uint64 size = 5;
+    uint32 attributes = 6;
+    FileType type = 7;
+}
+
+message DirectoryListingDirectoryEntry {
+    DirectoryListingEntry directory = 1;
+    repeated DirectoryListingEntry entries = 2;
+}
+
+message DirectoryListingResponse {
+    repeated DirectoryListingDirectoryEntry listing = 1;
 }

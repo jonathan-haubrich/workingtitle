@@ -11,8 +11,8 @@ def main():
     with open(MODULE_FILE_PATH) as fp:
         module_info = json.load(fp)
 
-    dirlist = os_module_pb2.DirectoryListing()
-    dirlist.path = r"C:\Windows\System32\*"
+    dirlist = os_module_pb2.DirectoryListingRequest()
+    dirlist.path = r"C:\Users\dweller\.cargo"
     dirlist.recursive = True
 
     payload = dirlist.SerializeToString()
@@ -45,9 +45,16 @@ def main():
     buf += chunk
 
     print(f"Received {len(buf)} bytes")
-    print(buf.decode())
-    #response = dispatch_pb2.DispatchMessage()
-    #response.ParseFromString(buf)
+    response = dispatch_pb2.DispatchResponse()
+    response.ParseFromString(buf)
+
+    error, payload = response.error, response.payload
+
+    listing = os_module_pb2.DirectoryListingResponse()
+    listing.ParseFromString(payload)
+
+    import pdb
+    pdb.set_trace()
 
     s.close()
 

@@ -1,10 +1,6 @@
 use std::{
-    fmt::{self, Display, Formatter},
-    ffi::OsString,
-    os::windows::ffi::OsStringExt,
-    slice};
+    collections::VecDeque, fmt::{self, Display, Formatter}, os::windows::fs::MetadataExt, slice};
 use prost::Message;
-use windows::{core::*, Win32::{Foundation::ERROR_NO_MORE_FILES, Storage::FileSystem::*}};
 
 #[repr(C)]
 pub struct Payload {
@@ -29,6 +25,15 @@ impl Payload {
 impl Default for Payload {
     fn default() -> Self {
         Self { data: std::ptr::null(), len: 0 }
+    }
+}
+
+impl From<Vec<u8>> for Payload {
+    fn from(value: Vec<u8>) -> Self {
+        let (data, len) = (value.as_ptr(), value.len());
+        std::mem::forget(value);
+
+        Self { data, len }
     }
 }
 
@@ -57,53 +62,74 @@ pub mod dispatch {
 }
 
 pub type DispatchFn = extern "C" fn(data: *const u8, len: usize) -> Payload;
-type CommandFn = fn(Vec<u8>) -> Vec<u8>;
+type CommandFn = fn(Vec<u8>) -> Option<Vec<u8>>;
 
-fn dirlist(serialized_args: Vec<u8>) -> Vec<u8> {
-    let args = os_module::DirectoryListing::decode(serialized_args.as_ref()).unwrap();
-    println!("args.path: {}", args.path);
-    let mut listing_data = String::new();
+fn handle_direntry(entry: std::fs::DirEntry) -> Option<os_module::DirectoryListingEntry> {
+    let metadata = match entry.metadata() {
+        Ok(metadata) => metadata,
+        Err(_) => return None
+    };
 
-    let mut find_data = WIN32_FIND_DATAW::default();
+    Some(os_module::DirectoryListingEntry{
+        path: match entry.path().to_str() {
+            Some(string) => string.to_owned(),
+            None => String::new()
+        },
+        accessed: metadata.last_access_time(),
+        modified: metadata.last_write_time(),
+        created: metadata.creation_time(),
+        size: metadata.file_size(),
+        attributes: metadata.file_attributes(),
+        r#type: match metadata.file_type() {
+            ft if ft.is_dir() => os_module::FileType::Directory.into(),
+            ft if ft.is_file() => os_module::FileType::File.into(),
+            _ => os_module::FileType::Symlink.into()
+        }
+    })
+}
 
-    let dir = w!("C:\\Windows\\System32\\*");
-    let find_handle = unsafe { FindFirstFileW(dir,&mut find_data) };
 
-    match find_handle {
-        Ok(handle) => {
-            let filename = OsString::from_wide(&find_data.cFileName);
+fn dirlist_get_entries(root: &os_module::DirectoryListingRequest, dir_queue: &mut VecDeque<String>, response: &mut os_module::DirectoryListingResponse) {
+    while !dir_queue.is_empty() {
+        if let Some(dir) = dir_queue.pop_back() {
+            if let Ok(readdir) = std::fs::read_dir(dir) {
+                let mut dl_direntry = os_module::DirectoryListingDirectoryEntry::default();
 
-            listing_data.push_str(filename.to_str().unwrap());
-            listing_data.push('\n');
+                for entry in readdir {
+                    if let Ok(entry) = entry {
+                        let dl_entry = handle_direntry(entry);
 
-            loop {
-                
-                find_data = WIN32_FIND_DATAW::default();
-                let result = unsafe { FindNextFileW(handle, &mut find_data) };
-                
-                match result {
-                    Ok(_) => {
-                        let filename = OsString::from_wide(&find_data.cFileName);
-                        listing_data.push_str(filename.to_str().unwrap());
-                        listing_data.push('\n');
-                    },
-                    Err(error) => {
-                        if error == ERROR_NO_MORE_FILES.into() {
-                            eprintln!("FindNextFile finished");
-                        } else {
-                            eprintln!("FindNextFileW failed: {}", error);
+                        if let Some(dl_entry) = dl_entry {
+                            if dl_entry.path == root.path {
+                                dl_direntry.directory = Some(dl_entry);
+                            } else {
+                                
+                                if dl_entry.r#type() == os_module::FileType::Directory &&
+                                    root.recursive {
+                                        dir_queue.push_back(dl_entry.path.to_string());
+                                    }
+                                    
+                                dl_direntry.entries.push(dl_entry);
+                            }
                         }
-                        break;
                     }
                 }
 
-
+                response.listing.push(dl_direntry);
             }
-        },
-        Err(error) => panic!("FindFirstFileW failed: {}", error)
+        }
     }
+}
 
-    listing_data.into_bytes()
+fn dirlist(serialized_args: Vec<u8>) -> Option<Vec<u8>> {
+    let args = os_module::DirectoryListingRequest::decode(serialized_args.as_ref()).unwrap();
+    
+    let mut dir_queue: VecDeque<String> = VecDeque::from([args.path.to_string()]);
+    let mut response = os_module::DirectoryListingResponse::default();
+
+    dirlist_get_entries(&args, &mut dir_queue, &mut response);
+
+    Some(response.encode_to_vec())
 }
 
 #[no_mangle]
@@ -116,11 +142,8 @@ pub extern "C" fn dispatch(data: *const u8, len: usize) -> Payload {
     match message {
         Ok(message) => {
             match dispatch_internal(message) {
-                Ok(mut response) => {
-                    let ptr = response.as_mut_ptr();
-                    let len = response.len();
-                    std::mem::forget(response);
-                    return Payload::new(ptr, len);
+                Ok(response) => {
+                    return response.into();
                 },
                 Err(error) => println!("Dispatch failed: {}", error)
             }
@@ -139,15 +162,20 @@ fn dispatch_internal(message: dispatch::DispatchMessage) -> std::result::Result<
         _ => return Err(DispatchError::FunctionNotFound(message.function_id))
     }
 
-    Ok(command_fn(message.payload))
+    let mut response = dispatch::DispatchResponse::default();
+
+    (response.payload, response.error) = match command_fn(message.payload) {
+        Some(payload) => (payload, 0),
+        None => (Vec::new(), std::u32::MAX)
+    };
+
+    Ok(response.encode_to_vec())
 }
 
 
 #[cfg(test)]
 mod tests {
     use std::{io::Read, path::Path};
-
-    use os_module::DirectoryListing;
 
     use super::*;
 
@@ -158,7 +186,7 @@ mod tests {
         let mut contents = Vec::new();
         fstream.read_to_end(&mut contents)?;
 
-        let dl : DirectoryListing = prost::Message::decode(contents.as_ref())?;
+        let dl : os_module::DirectoryListingRequest = prost::Message::decode(contents.as_ref())?;
 
         assert_eq!(dl.path, r#"C:\Users\dweller\testpath"#);
         assert_eq!(dl.recursive, true);

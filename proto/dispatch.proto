@@ -7,3 +7,8 @@ message DispatchMessage {
     string function_id = 2;
     bytes payload = 3;
 }
+
+message DispatchResponse {
+    uint32 error = 1;
+    bytes payload = 2;
+}
