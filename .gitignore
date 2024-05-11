@@ -5,3 +5,8 @@ proto/protoc
 serialized.bin
 *.pyc
 *.bin
+
+dispatch.rs
+dispatch_pb2.py
+os_module.rs
+os_module_pb2.py
