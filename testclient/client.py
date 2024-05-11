@@ -3,9 +3,20 @@ import os_module_pb2
 
 import os
 import json
+import shlex
 from socket import *
 
+import struct
+
 MODULE_FILE_PATH = os.path.normpath(os.path.join(os.path.dirname(__file__), r"..\module.json"))
+
+def recv_all(sock, recv_len):
+    buf = sock.recv(recv_len)
+
+    while len(buf) < recv_len:
+        buf += sock.recv(recv_len - len(buf))
+
+    return buf
 
 def main():
     with open(MODULE_FILE_PATH) as fp:
@@ -32,29 +43,50 @@ def main():
     s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
     s.connect(('127.0.0.1',4444))
     print("Connected")
-    s.send(message)
-    s.shutdown(SHUT_WR)
 
-    buf = b''
-    chunk_size = 1024 * 16
-    chunk = s.recv(chunk_size)
-    while len(chunk) == chunk_size:
-        buf += chunk
-        chunk = s.recv(chunk_size)
+    wire_len_fmt = "!Q"
 
-    buf += chunk
+    while True:
 
-    print(f"Received {len(buf)} bytes")
-    response = dispatch_pb2.DispatchResponse()
-    response.ParseFromString(buf)
+        command = input("<dir> <recurse>: ")
+        directory, recurse = shlex.split(command)
 
-    error, payload = response.error, response.payload
+        dir_list_req = os_module_pb2.DirectoryListingRequest()
+        dir_list_req.path = directory
+        dir_list_req.recursive = eval(recurse)
 
-    listing = os_module_pb2.DirectoryListingResponse()
-    listing.ParseFromString(payload)
+        message = dispatch_pb2.DispatchMessage()
+        message.module_id = "758d227f-27e0-4406-b27e-cf9976948109"
+        message.function_id = "758d227f-27e0-4406-b27e-cf9976948109"
+        message.payload = dir_list_req.SerializeToString()
 
-    import pdb
-    pdb.set_trace()
+        serialized = message.SerializeToString()
+        sent = s.send(struct.pack("!Q", len(serialized)))
+        print(f"Sending {len(serialized)} ({struct.pack('!Q', len(serialized))})")
+        sent = s.send(serialized)
+        print(f"Sent {sent} bytes")
+
+        wire_len = struct.calcsize(wire_len_fmt)
+        print(f"wire_len: {wire_len}")
+        response_len_bytes = recv_all(s, wire_len)
+
+        response_len = struct.unpack(wire_len_fmt, response_len_bytes)[0]
+        print(f"Receiving {response_len} bytes")
+
+        response = recv_all(s, response_len)
+        #print(response)
+
+        dispatch = dispatch_pb2.DispatchResponse()
+        dispatch.ParseFromString(response)
+
+        error, payload = dispatch.error, dispatch.payload
+
+        listing = os_module_pb2.DirectoryListingResponse()
+        listing.ParseFromString(payload)
+
+        for directory in listing.listing:
+            for entry in directory.entries:
+                print(entry.path)
 
     s.close()
 

@@ -33,6 +33,7 @@ impl From<Vec<u8>> for Payload {
         let (data, len) = (value.as_ptr(), value.len());
         std::mem::forget(value);
 
+        dbg!("Self {{ data ({}), len ({}) }}", data, len);
         Self { data, len }
     }
 }
@@ -143,6 +144,7 @@ pub extern "C" fn dispatch(data: *const u8, len: usize) -> Payload {
         Ok(message) => {
             match dispatch_internal(message) {
                 Ok(response) => {
+                    dbg!("response.len(): {} -> response.into()", response.len());
                     return response.into();
                 },
                 Err(error) => println!("Dispatch failed: {}", error)
@@ -151,6 +153,7 @@ pub extern "C" fn dispatch(data: *const u8, len: usize) -> Payload {
         Err(error) => println!("Decode failed: {}", error)
     };
 
+    dbg!("Payload::default()");
     Payload::default()
 }
 
