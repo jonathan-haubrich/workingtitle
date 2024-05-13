@@ -12,9 +12,6 @@ fn main() -> Result<()> {
     // compile proto files
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
     let proto_dir = Path::new(&(manifest_dir.clone())).join("..\\proto").canonicalize().unwrap();
-    let protoc_path = proto_dir.join("protoc\\bin\\protoc.exe").canonicalize().unwrap();
-
-    env::set_var("PROTOC", protoc_path);
 
     let proto_files: Vec<String> = proto_dir.read_dir().unwrap()
         .into_iter()

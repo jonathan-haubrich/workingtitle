@@ -1,3 +1,4 @@
+use std::ffi::OsStr;
 use std::io::{self, prelude::*};
 use std::net::TcpListener;
 use std::os::windows::ffi::OsStrExt;
@@ -18,10 +19,23 @@ pub mod dispatch {
 }
 
 fn load_dll_get_dispatch() -> testmodule::DispatchFn {
-    // let out_dir = std::env::var("OUT_DIR").unwrap();
-    // let testmodule_dll = std::path::Path::new(&out_dir).join("..\\..\\..\\testmodule.dll");
-    //println!("Path to testmodule.dll: {}", testmodule_dll.to_str().unwrap());
-    let testmodule_dll = r#"C:\Users\dweller\Source\repos\workingtitle\target\debug\testmodule.dll"#;
+    let current_dir = std::env::current_dir().unwrap();
+    let working_dir = std::path::Path::new("workingtitle");
+    let testcore_dir = std::path::Path::new("testcore");
+    let testmodule_dll = if current_dir.file_name().unwrap() == working_dir {
+        // see if we're in root directory
+        std::path::Path::new("target\\debug\\testmodule.dll").to_path_buf()
+    } else if current_dir.file_name().unwrap() == testcore_dir {
+        std::path::Path::new("..\\target\\debug\\testmodule.dll").to_path_buf()
+    } else {
+        // check if WOTI_MODULE_DIR is set
+        match std::env::var("WOTI_MODULE_DIR") {
+            Ok(value) => std::path::Path::new(&value).join("testmodule.dll"),
+            Err(_) => panic!("Can't locate testmodule.dll. Run from `workingtitle` or `testcore` directory or specify module dir in `WOTI_MODULE_DIR`")
+        }
+    };
+
+    //let testmodule_dll = r#"C:\Users\dweller\Source\repos\workingtitle\target\debug\testmodule.dll"#;
     let testmodule_dll: Vec<u16> = std::ffi::OsString::from(testmodule_dll)
         .encode_wide()
         .chain(std::iter::once(0))

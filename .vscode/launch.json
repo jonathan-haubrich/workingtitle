@@ -7,9 +7,9 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug",
-            "program": "${workspaceFolder}/<executable file>",
-            "args": [],
+            "name": "Debug Core",
+            "program": "cargo",
+            "args": ["run"],
             "cwd": "${workspaceFolder}",
             "env": {
                 "RUST_LOG": "debug"
