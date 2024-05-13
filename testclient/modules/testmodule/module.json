@@ -1,0 +1,23 @@
+{
+    "name": "testmodule",
+    "pyfile": "os_module_pb2.py",
+    "functions": [
+        {
+            "name": "dirlist",
+            "args_type": "DirectoryListingRequest",
+            "args": [
+                {
+                    "name": "path",
+                    "type": "string",
+                    "required": true
+                },
+                {
+                    "name": "recursive",
+                    "type": "bool",
+                    "required": true
+                }                
+            ],
+            "help": "Lists the contents of the specified directory (optionally, recursively)"
+        }
+    ]
+}

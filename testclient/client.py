@@ -9,6 +9,7 @@ from socket import *
 import struct
 
 MODULE_FILE_PATH = os.path.normpath(os.path.join(os.path.dirname(__file__), r"..\module.json"))
+MODULES_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), "modules"))
 
 def recv_all(sock, recv_len):
     buf = sock.recv(recv_len)
