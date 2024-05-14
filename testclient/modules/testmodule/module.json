@@ -1,5 +1,5 @@
 {
-    "name": "testmodule",
+    "name": "os_module",
     "pyfile": "os_module_pb2.py",
     "functions": [
         {
@@ -7,11 +7,13 @@
             "args_type": "DirectoryListingRequest",
             "args": [
                 {
+                    "short_name": "p",
                     "name": "path",
-                    "type": "string",
+                    "type": "str",
                     "required": true
                 },
                 {
+                    "short_name": "r",
                     "name": "recursive",
                     "type": "bool",
                     "required": true
